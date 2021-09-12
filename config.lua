@@ -10,7 +10,7 @@ Config.tarantool = {
     wal_dir              = './tmp',
     log                  = './tmp/qube.log',
     background           = false,
-    custom_proc_title    = 'cestix',
+    custom_proc_title    = 'cestyx',
     log_level            = 5,
   }
 }
@@ -25,10 +25,10 @@ Config.http = {
   log_errors   = true
 }
 
-Config.cestix = {
+Config.cestyx = {
   default_expiration = 5 * 60,  -- 5 min
-  allow_create_space = true,    -- Cestix can create new space
-  space_prefix       = 'cestix' -- spaces will created with name cestix_<some_passed_name>
+  allow_create_space = true,    -- cestyx can create new space
+  space_prefix       = 'cestyx' -- spaces will created with name cestyx_<some_passed_name>
 }
 
 return Config

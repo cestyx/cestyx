@@ -7,7 +7,7 @@ local json        = require('json')
 local http_router = require('http.router')
 local http_server = require('http.server')
 local tsgi        = require('http.tsgi')
-local cestix      = require('lib.cestix')
+local cestyx      = require('lib.cestyx')
 
 -- Push response to client
 local function send_response(code, payload)
@@ -20,7 +20,7 @@ end
 
 -- Forward request to handle accordingly to table 'routes'
 local function forward_request(controller, request)
-  local success, result = pcall(cestix[controller], request)
+  local success, result = pcall(cestyx[controller], request)
   if not success then
     return send_response(500, result)
   else

@@ -3,7 +3,7 @@
 local M = {}
 
 M.config = require('config')
-M.space_prefix = M.config.cestix.space_prefix
+M.space_prefix = M.config.cestyx.space_prefix
 
 M.space_format = {
   { name = 'crc',     type = 'number' },
