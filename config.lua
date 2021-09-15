@@ -5,13 +5,13 @@ Config.tarantool = {
   node = {
     memtx_memory         = 1024 * 1024 * 1024 * 2,  -- 2Gb
     memtx_max_tuple_size = 1024 * 1024 * 5,         -- 5Mb
-    pid_file             = './tmp/qube.pid',
-    memtx_dir            = './tmp',
-    wal_dir              = './tmp',
-    log                  = './tmp/qube.log',
+    pid_file             = 'tmp/cestyx.pid',
+    memtx_dir            = 'tmp',
+    wal_dir              = 'tmp',
+    -- log                  = 'tmp/cestyx.log',
     background           = false,
     custom_proc_title    = 'cestyx',
-    log_level            = 5,
+    log_level            = 5
   }
 }
 
@@ -26,9 +26,8 @@ Config.http = {
 }
 
 Config.cestyx = {
-  default_expiration = 5 * 60,  -- 5 min
-  allow_create_space = true,    -- cestyx can create new space
-  space_prefix       = 'cestyx' -- spaces will created with name cestyx_<some_passed_name>
+  default_expiration = 5 * 60,   -- 5 min
+  space_prefix       = 'cestyx', -- Spaces will created with name cestyx_<some_passed_name>
 }
 
 return Config

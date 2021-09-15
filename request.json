@@ -1,0 +1,7 @@
+{
+  "url": "https://jsonplaceholder.typicode.com/todos/1",
+  "method": "GET",
+  "headers": ["Content-Type:application/json", "Accept:application/json"],
+  "body": {},
+  "space": "some_json"
+}

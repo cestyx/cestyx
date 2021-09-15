@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-mkdir -p ../tmp
+mkdir -p tmp
 tarantool init.lua
-rm -rf ./tmp/*.snap ./tmp/*.xlog
+rm -rf tmp
