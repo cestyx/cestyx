@@ -1,6 +1,9 @@
-local xray  = require('lib.xray')
-local json  = require('json')
-local http  = require('http.client')
+local xray    = require('lib.xray')
+local json    = require('json')
+local http    = require('http.client')
+local fiber   = require('fiber')
+local math    = require('math')
+local batches = require('lib.batches')
 
 local M = {}
 
@@ -18,6 +21,14 @@ M.space_index_primary = {
   type   = 'hash',
   parts  = {
     { field = 1, type = 'string' },
+  }
+}
+
+M.space_index_expiration = {
+  unique = false,
+  type   = 'tree',
+  parts  = {
+    { field = 3, type = 'number' },
   }
 }
 
@@ -57,16 +68,16 @@ function M.create_space(name)
   local space_name = M.space_prefix .. '_' .. name
   local space = box.schema.space.create(space_name, { engine = 'memtx', format = M.space_format })
         space:create_index('primary', M.space_index_primary)
-        -- space:create_index('expiration', M.space_index_expiration)
+        space:create_index('expiration', M.space_index_expiration)
   return space
 end
 
 -- Get tuple from space
 function M.get(space_name, key)
-  return M.get_space(space_name):get{key}
+  return M.get_space(space_name).index.primary:get{key}
 end
 
--- Set data to space
+-- Insert data to space
 function M.set(space_name, key, data, expires)
   local space = M.get_space(space_name)
   return space:replace{key, data, expires}
@@ -92,6 +103,7 @@ function M._fetch_from_remote(data)
   return response.status, response.body
 end
 
+-- Public function to fetch data
 function M.fetch(data)
   local record = M._fetch_from_local(data)
   if record ~= nil then
@@ -107,13 +119,36 @@ function M.fetch(data)
   end
 end
 
+-- Convert headers to http_client format
 function M._parse_headers(data)
   local headers = {}
   for _,v in ipairs(data) do
-    local tbl = string.split(v, ":")
+    local tbl = string.split(v, ':')
     headers[tbl[1]] = tbl[2]
   end
   return headers
+end
+
+-- Get list of spaces with cached data
+function M.get_spaces()
+  local spaces = {}
+  for _, space in box.space._space:pairs() do
+    local space_name = space[3]
+    if string.find(space_name, M.space_prefix) then
+      table.insert(spaces, space)
+    end
+  end
+  return spaces
+end
+
+-- Remove expired tuples
+function M._clean(space)
+  local timestamp   = math.ceil(fiber.time())
+  local space_index = space.index.expiration
+  for _, tuple in space_index:pairs(timestamp, { iterator = box.index.LE }) do
+    local tuple_key = tuple[1]
+    space:delete{ tuple_key }
+  end
 end
 
 return M

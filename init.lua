@@ -2,17 +2,16 @@ require('strict').on()
 
 local config = require('config')
 box.cfg(config.tarantool.node)
-local clock = require('clock')
 
 local json        = require('json')
 local http_router = require('http.router')
 local http_server = require('http.server')
 local tsgi        = require('http.tsgi')
 local cestyx      = require('lib.cestyx')
+local xray        = require('lib.xray')
 
 -- Push response to client
 local function send_response(code, payload)
-  print(clock.monotonic())
   if not type(payload) == 'table' then
     return { status = code, body = json.encode({ message = tostring(payload) }) }
   else
@@ -22,7 +21,6 @@ end
 
 -- Forward request to handle accordingly to table 'routes'
 local function forward_request(controller, request)
-  print(clock.monotonic())
   local success, result = pcall(cestyx[controller], request)
   if not success then
     return send_response(500, result)
