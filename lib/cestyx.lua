@@ -110,10 +110,8 @@ end
 function M.fetch(data)
   local record = M._fetch_from_local(data)
   if record ~= nil then
-    print('Попал в кэш')
     return record['data']
   else
-    print('Промах кэша')
     local code, body = M._fetch_from_remote(data)
     if code == 200 then
       M.set(data['space'], data['key'], body, data['expires'])

@@ -55,7 +55,7 @@ tarantool init.lua
 ### Usage
 
 ```sh
-curl --silent -X GET \
+curl --silent -X POST \
   -H "X-AUTH-TOKEN: ca438b" \
   -H "X-Space: some_space" \
   -H "X-Key: some_unique_key" \
