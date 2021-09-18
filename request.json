@@ -1,7 +1,6 @@
 {
-  "url": "https://jsonplaceholder.typicode.com/todos/1",
+  "url": "http://127.0.0.1:4567/some_path",
   "method": "GET",
-  "headers": ["Content-Type:application/json", "Accept:application/json"],
-  "body": {},
-  "space": "some_json"
+  "headers": ["Accept: text/html"],
+  "body": {}
 }

@@ -1,3 +1,13 @@
+## Cestyx
+HTTP Proxy-cache based on Tarantool
+
+### Installation
+1. Install [Tarantool](https://github.com/tarantool/tarantool) or `brew install tarantool`
+3. Install [HTTP](https://github.com/tarantool/http) or `tarantoolctl rocks install http`
+4. `git clone https://github.com/cestyx/cestyx.git`
+5. Edit config:
+
+```Lua
 local Config = {}
 
 -- TNT configuration
@@ -35,3 +45,32 @@ Config.cestyx = {
 }
 
 return Config
+```
+
+Run Cestix
+```
+tarantool init.lua
+```
+
+### Usage
+
+```sh
+curl --silent -X GET \
+  -H "X-AUTH-TOKEN: ca438b" \
+  -H "X-Space: some_space" \
+  -H "X-Key: some_unique_key" \
+  -H "X-Expires: 1631937866" \
+  -H "Content-Type: application/json" \
+  --data "@request.json" \
+  http://127.0.0.1:7000/api/v1/_proxy
+```
+
+request.json
+```json
+{
+  "url": "http://127.0.0.1:4567/some_path",
+  "method": "GET",
+  "headers": ["Accept: text/html"],
+  "body": {}
+}
+```

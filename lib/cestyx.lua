@@ -1,14 +1,17 @@
-local xray    = require('lib.xray')
 local json    = require('json')
 local http    = require('http.client')
 local fiber   = require('fiber')
 local math    = require('math')
 local batches = require('lib.batches')
+-- local xray    = require('lib.xray')
 
 local M = {}
 
 M.config = require('config')
-M.space_prefix = M.config.cestyx.space_prefix
+
+M.space_prefix      = M.config.cestyx.space_prefix
+M.clearing_interval = M.config.cestyx.clearing_interval
+M.cleaner_process   = nil
 
 M.space_format = {
   { name = 'key',     type = 'string' },
@@ -40,7 +43,7 @@ end
 
 -- Unpack client request
 function M.unpack(request)
-  local request_body    = json.decode(request:read())
+  local request_body = json.decode(request:read())
   local request_headers = request:headers()
   return {
     expires = tonumber(request_headers['x-expires']),
@@ -107,8 +110,10 @@ end
 function M.fetch(data)
   local record = M._fetch_from_local(data)
   if record ~= nil then
+    print('Попал в кэш')
     return record['data']
   else
+    print('Промах кэша')
     local code, body = M._fetch_from_remote(data)
     if code == 200 then
       M.set(data['space'], data['key'], body, data['expires'])
@@ -129,26 +134,43 @@ function M._parse_headers(data)
   return headers
 end
 
--- Get list of spaces with cached data
+-- Get list of spaces
 function M.get_spaces()
   local spaces = {}
   for _, space in box.space._space:pairs() do
     local space_name = space[3]
     if string.find(space_name, M.space_prefix) then
-      table.insert(spaces, space)
+      table.insert(spaces, box.space[space_name])
     end
   end
   return spaces
 end
 
--- Remove expired tuples
-function M._clean(space)
-  local timestamp   = math.ceil(fiber.time())
-  local space_index = space.index.expiration
-  for _, tuple in space_index:pairs(timestamp, { iterator = box.index.LE }) do
-    local tuple_key = tuple[1]
-    space:delete{ tuple_key }
+-- Spaces cleaner
+function M.cleaner()
+  local spaces    = M.get_spaces()
+  local timestamp = math.ceil(fiber.time())
+  for _, space in pairs(spaces) do
+    local expired  = space.index.expiration
+    batches.atomic(100, expired:pairs(timestamp, { iterator = box.index.LE }),
+      function(tuple)
+        print(tuple[1], space.name)
+        local tuple_key = tuple[1]
+        space:delete{ tuple_key }
+      end
+    )
   end
+end
+
+-- Run cleaner on schedule
+function M.start()
+  fiber.create(function()
+    while true do
+      M.cleaner_process = fiber.create(M.cleaner)
+      fiber.sleep(M.clearing_interval)
+    end
+  end)
+  return M
 end
 
 return M

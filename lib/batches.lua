@@ -1,5 +1,4 @@
 -- Copy from https://raw.githubusercontent.com/tarantool/examples/master/cookbook/space/in_batches.lua
-
 local fiber = require('fiber')
 
 local export = {}
