@@ -47,7 +47,7 @@ Config.cestyx = {
 return Config
 ```
 
-Run Cestix
+Run Cestyx
 ```
 tarantool init.lua
 ```
